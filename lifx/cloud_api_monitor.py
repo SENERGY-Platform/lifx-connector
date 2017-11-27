@@ -96,6 +96,7 @@ class Monitor(Thread):
                         Client.disconnect(changed_device_id)
                     except AttributeError:
                         DevicePool.remove(changed_device_id)
+                    del unknown_devices[changed_device_id]
                 else:
                     device = DevicePool.get(changed_device_id)
                     name = unknown_devices[changed_device_id].get('label')
