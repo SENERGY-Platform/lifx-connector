@@ -79,7 +79,7 @@ class Monitor(Thread):
             for new_device_id in new_devices:
                 name = unknown_devices[new_device_id].get('label')
                 logger.info("found '{}' with id '{}'".format(name, new_device_id))
-                device = Device(new_device_id, 'iot#8bded448-ef40-44db-88ac-bbf991398a28', name)
+                device = Device(new_device_id, 'iot#64fb272a-c3c8-4bea-8c54-ecb235361726', name)
                 product = unknown_devices[new_device_id].get('product')
                 device.addTag('type', 'Extended color light')
                 device.addTag('product', product.get('name'))
