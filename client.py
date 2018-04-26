@@ -4,12 +4,12 @@ if import_path not in sys.path:
     sys.path.insert(0, import_path)
 
 try:
-    from modules.logger import root_logger
     from modules.http_lib import Methods as http
     from modules.device_pool import DevicePool
     from connector.client import Client
     from lifx.cloud_api_configuration import LIFX_CLOUD_URL, LIFX_API_KEY
     from lifx.cloud_api_monitor import Monitor
+    from lifx.logger import root_logger
 except ImportError as ex:
     exit("{} - {}".format(__name__, ex.msg))
 
