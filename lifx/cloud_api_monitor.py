@@ -2,11 +2,11 @@ if __name__ == '__main__':
     exit('Please use "client.py"')
 
 try:
-    from modules.http_lib import Methods as http
-    from connector.client import Client
-    from connector.device import Device
+    from connector_client.modules.http_lib import Methods as http
+    from connector_client.client import Client
+    from connector_client.device import Device
     from lifx.cloud_api_configuration import LIFX_API_KEY, LIFX_CLOUD_URL
-    from modules.device_pool import DevicePool
+    from connector_client.modules.device_pool import DevicePool
     from lifx.logger import root_logger
 except ImportError as ex:
     exit("{} - {}".format(__name__, ex.msg))

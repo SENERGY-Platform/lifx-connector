@@ -1,12 +1,7 @@
-import os, sys, inspect
-import_path = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0],"connector_client")))
-if import_path not in sys.path:
-    sys.path.insert(0, import_path)
-
 try:
-    from modules.http_lib import Methods as http
-    from modules.device_pool import DevicePool
-    from connector.client import Client
+    from connector_client.modules.http_lib import Methods as http
+    from connector_client.modules.device_pool import DevicePool
+    from connector_client.client import Client
     from lifx.cloud_api_configuration import LIFX_CLOUD_URL, LIFX_API_KEY
     from lifx.cloud_api_monitor import Monitor
     from lifx.logger import root_logger
