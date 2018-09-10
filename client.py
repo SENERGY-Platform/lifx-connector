@@ -2,7 +2,7 @@ try:
     from connector_client.modules.http_lib import Methods as http
     from connector_client.modules.device_pool import DevicePool
     from connector_client.client import Client
-    from lifx.cloud_api_configuration import LIFX_CLOUD_URL, LIFX_API_KEY
+    from lifx.configuration import LIFX_CLOUD_URL, LIFX_API_KEY
     from lifx.cloud_api_monitor import Monitor
     from lifx.logger import root_logger
 except ImportError as ex:

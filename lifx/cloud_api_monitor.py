@@ -5,7 +5,7 @@ try:
     from connector_client.modules.http_lib import Methods as http
     from connector_client.client import Client
     from connector_client.device import Device
-    from lifx.cloud_api_configuration import LIFX_API_KEY, LIFX_CLOUD_URL
+    from lifx.configuration import LIFX_API_KEY, LIFX_CLOUD_URL, SEPL_DEVICE_TYPE
     from connector_client.modules.device_pool import DevicePool
     from lifx.logger import root_logger
 except ImportError as ex:
@@ -78,7 +78,7 @@ class Monitor(Thread):
             for new_device_id in new_devices:
                 name = unknown_devices[new_device_id].get('label')
                 logger.info("found '{}' with id '{}'".format(name, new_device_id))
-                device = Device(new_device_id, 'iot#64fb272a-c3c8-4bea-8c54-ecb235361726', name)
+                device = Device(new_device_id, SEPL_DEVICE_TYPE, name)
                 product = unknown_devices[new_device_id].get('product')
                 device.addTag('type', 'Extended color light')
                 device.addTag('product', product.get('name'))
