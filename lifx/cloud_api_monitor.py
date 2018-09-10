@@ -19,7 +19,6 @@ logger = root_logger.getChild(__name__)
 
 class Monitor(Thread):
     _known_devices = dict()
-    _known_groups = dict()
 
     def __init__(self):
         super().__init__()
