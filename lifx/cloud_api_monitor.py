@@ -46,7 +46,7 @@ class Monitor(Thread):
 
     def run(self):
         while True:
-            time.sleep(300)
+            time.sleep(120)
             unknown_devices = self._queryLifxCloud()
             if unknown_devices:
                 self._evaluate(unknown_devices)
