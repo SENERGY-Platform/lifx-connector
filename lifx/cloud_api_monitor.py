@@ -105,8 +105,8 @@ class Monitor(Thread):
                     DevicePool.add(device)
         if changed_devices:
             for changed_device_id in changed_devices:
-                connected = unknown_devices[changed_device_id].get('connected')
-                if not connected:
+                seconds_since_seen = unknown_devices[changed_device_id].get('seconds_since_seen')
+                if seconds_since_seen >= 60:
                     try:
                         Client.disconnect(changed_device_id)
                     except AttributeError:
