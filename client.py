@@ -15,9 +15,9 @@
 """
 
 try:
-    from connector_client.modules.http_lib import Methods as http
-    from connector_client.modules.device_pool import DevicePool
-    from connector_client.client import Client
+    from connector_lib.modules.http_lib import Methods as http
+    from connector_lib.modules.device_pool import DevicePool
+    from connector_lib.client import Client
     from lifx.configuration import LIFX_CLOUD_URL, LIFX_API_KEY
     from lifx.cloud_api_monitor import Monitor
     from lifx.logger import root_logger
@@ -56,5 +56,5 @@ def router():
 
 if __name__ == '__main__':
     lifx_cloud_monitor = Monitor()
-    connector_client = Client(device_manager=DevicePool)
+    client_connector = Client(device_manager=DevicePool)
     router()
