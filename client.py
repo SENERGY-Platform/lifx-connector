@@ -35,6 +35,7 @@ def router():
             for part in task.payload.get('protocol_parts'):
                 if part.get('name') == 'data':
                     command = part.get('value')
+            logger.info(command)
             http_resp = http.put(
                 '{}/lights/id:{}/state'.format(
                     LIFX_CLOUD_URL, task.payload.get('device_url')
@@ -48,6 +49,7 @@ def router():
             if http_resp.status not in (200, 207):
                 logger.error("could not route message to LIFX API - '{}'".format(http_resp.status))
             response = str(http_resp.status)
+            logger.info(response)
         except Exception as ex:
             logger.error("error handling task - '{}'".format(ex))
             response = '500'
