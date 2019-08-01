@@ -14,18 +14,9 @@
    limitations under the License.
 """
 
-if __name__ == '__main__':
-    exit('Please use "client.py"')
 
-try:
-    from connector_lib.modules.http_lib import Methods as http
-    from connector_lib.client import Client
-    from connector_lib.device import Device
-    from lifx.configuration import LIFX_API_KEY, LIFX_CLOUD_URL, SEPL_DEVICE_TYPE
-    from connector_lib.modules.device_pool import DevicePool
-    from lifx.logger import root_logger
-except ImportError as ex:
-    exit("{} - {}".format(__name__, ex.msg))
+from .configuration import config
+from .logger import root_logger
 import json, time
 from threading import Thread
 
