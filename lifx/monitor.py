@@ -17,98 +17,138 @@
 
 from .configuration import config
 from .logger import root_logger
-import json, time
+from .device_manager import DeviceManager
+from .types.device import device_type_map
 from threading import Thread
+import requests, time, cc_lib
 
 
-logger = root_logger.getChild(__name__)
+logger = root_logger.getChild(__name__.split(".", 1)[-1])
 
 
 class Monitor(Thread):
     _known_devices = dict()
 
-    def __init__(self):
-        super().__init__()
-        unknown_devices = self._queryLifxCloud()
-        self._evaluate(unknown_devices)
-        self.start()
-
+    def __init__(self, device_manager: DeviceManager, client: cc_lib.client.Client):
+        super().__init__(name="monitor", daemon=True)
+        self.__device_manager = device_manager
+        self.__client = client
 
     def run(self):
         while True:
-            time.sleep(120)
-            unknown_devices = self._queryLifxCloud()
-            self._evaluate(unknown_devices)
+            queried_devices = self.__queryCloud()
+            if queried_devices:
+                self.__evaluate(queried_devices)
+            time.sleep(30)
 
+    def __queryCloud(self):
+        try:
+            response = requests.get(
+                url="https://{}/{}/all".format(config.Cloud.host, config.Cloud.api_path),
+                headers={"Authorization": "Bearer {}".format(config.Cloud.api_key)}
+            )
+            if response.status_code == 200:
+                response = response.json()
+                devices = dict()
+                for device in response:
+                    try:
+                        devices[device["id"]] = (
+                            {
+                                "name": device["label"],
+                                "state": {
+                                    "connected": device["connected"],
+                                    "power": device["power"],
+                                    "brightness": device["brightness"],
+                                    "hue": device["color"]["hue"],
+                                    "saturation": device["color"]["saturation"],
+                                    "kelvin": device["color"]["kelvin"],
+                                }
+                            },
+                            {
+                                "product_name": device["product"]["name"],
+                                "manufacturer": device["product"]["company"],
+                                "product_type": device["product"]["identifier"]
+                            }
+                        )
+                    except KeyError as ex:
+                        logger.error("could not parse device - {}".format(ex))
+                        logger.debug(device)
+                return devices
+            else:
+                logger.error("could not query cloud - '{}'".format(response.status_code))
+        except requests.exceptions.RequestException as ex:
+            logger.error("could not query cloud - '{}'".format(ex))
 
-    def _queryLifxCloud(self):
-        unknown_lights = dict()
-        response = http.get(
-            '{}/lights/all'.format(
-                LIFX_CLOUD_URL
-            ),
-            headers={
-                'Authorization': 'Bearer {}'.format(LIFX_API_KEY),
-            }
-        )
-        if response.status == 200:
-            lights = json.loads(response.body)
-            for light in lights:
-                light_id = light.get('id')
-                unknown_lights[light_id] = light
-        else:
-            logger.error("could not query lights - '{}'".format(response.status))
-        return unknown_lights
-
-
-    def _diff(self, known, unknown):
+    def __diff(self, known: dict, unknown: dict):
         known_set = set(known)
         unknown_set = set(unknown)
         missing = known_set - unknown_set
         new = unknown_set - known_set
-        changed = {k for k in known_set & unknown_set if known[k] != unknown[k]}
+        changed = {key for key in known_set & unknown_set if dict(known[key]) != unknown[key][0]}
         return missing, new, changed
 
-
-    def _evaluate(self, unknown_devices):
-        missing_devices, new_devices, changed_devices = self._diff(__class__._known_devices, unknown_devices)
+    def __evaluate(self, queried_devices):
+        missing_devices, new_devices, changed_devices = self.__diff(self.__device_manager.devices, queried_devices)
+        updated_devices = list()
         if missing_devices:
-            for missing_device_id in missing_devices:
-                logger.info("can't find '{}' with id '{}'".format(__class__._known_devices[missing_device_id].get('label'), missing_device_id))
+            futures = list()
+            for device_id in missing_devices:
+                logger.info("can't find '{}' with id '{}'".format(
+                    self.__device_manager.get(device_id).name, device_id)
+                )
+                futures.append((device_id, self.__client.deleteDevice(device_id, asynchronous=True)))
+            for device_id, future in futures:
+                future.wait()
                 try:
-                    Client.delete(missing_device_id)
-                except AttributeError:
-                    DevicePool.remove(missing_device_id)
-        if new_devices:
-            for new_device_id in new_devices:
-                name = unknown_devices[new_device_id].get('label')
-                logger.info("found '{}' with id '{}'".format(name, new_device_id))
-                device = Device(new_device_id, SEPL_DEVICE_TYPE, name)
-                product = unknown_devices[new_device_id].get('product')
-                device.addTag('type', 'Extended color light')
-                device.addTag('product', product.get('name'))
-                device.addTag('manufacturer', product.get('company'))
-                try:
-                    Client.add(device)
-                except AttributeError:
-                    DevicePool.add(device)
-        if changed_devices:
-            for changed_device_id in changed_devices:
-                seconds_since_seen = unknown_devices[changed_device_id].get('seconds_since_seen')
-                if seconds_since_seen >= 60:
+                    future.result()
+                    self.__device_manager.delete(device_id)
+                except cc_lib.client.DeviceDeleteError:
                     try:
-                        Client.disconnect(changed_device_id)
-                    except AttributeError:
-                        DevicePool.remove(changed_device_id)
-                    del unknown_devices[changed_device_id]
-                else:
-                    device = DevicePool.get(changed_device_id)
-                    name = unknown_devices[changed_device_id].get('label')
-                    if not name == device.name:
-                        device.name = name
-                        try:
-                            Client.update(device)
-                        except AttributeError:
-                            DevicePool.update(device)
-                        logger.info("name of '{}' changed to {}".format(changed_device_id, name))
-        __class__._known_devices = unknown_devices
+                        self.__client.disconnectDevice(device_id)
+                    except (cc_lib.client.DeviceDisconnectError, cc_lib.client.NotConnectedError):
+                        pass
+        if new_devices:
+            futures = list()
+            for device_id in new_devices:
+                device = device_type_map[queried_devices[device_id][1]["product_type"]](device_id, **queried_devices[device_id][0])
+                for key, value in queried_devices[device_id][1].items():
+                    if not key == "product_type":
+                        device.addTag(key, value)
+                logger.info("found '{}' with id '{}'".format(device.name, device.id))
+                futures.append((device, self.__client.addDevice(device, asynchronous=True)))
+            for device, future in futures:
+                future.wait()
+                try:
+                    future.result()
+                    self.__device_manager.add(device)
+                    if device.state["connected"]:
+                        self.__client.connectDevice(device, asynchronous=True)
+                except (cc_lib.client.DeviceAddError, cc_lib.client.DeviceUpdateError):
+                    pass
+        if changed_devices:
+            futures = list()
+            for device_id in changed_devices:
+                device = self.__device_manager.get(device_id)
+                prev_device_name = device.name
+                prev_device_reachable_state = device.state["connected"]
+                device.name = queried_devices[device_id][0]["name"]
+                device.state = queried_devices[device_id][0]["state"]
+                if device.state["connected"] != prev_device_reachable_state:
+                    if device.state["connected"]:
+                        self.__client.connectDevice(device, asynchronous=True)
+                    else:
+                        self.__client.disconnectDevice(device, asynchronous=True)
+                if device.name != prev_device_name:
+                    futures.append((device, prev_device_name, self.__client.updateDevice(device, asynchronous=True)))
+            for device, prev_device_name, future in futures:
+                future.wait()
+                try:
+                    future.result()
+                    updated_devices.append(device.id)
+                except cc_lib.client.DeviceUpdateError:
+                    device.name = prev_device_name
+        if any((missing_devices, new_devices, updated_devices)):
+            try:
+                self.__client.syncHub(list(self.__device_manager.devices.values()), asynchronous=True)
+            except cc_lib.client.HubError:
+                pass

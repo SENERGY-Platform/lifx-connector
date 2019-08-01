@@ -14,43 +14,49 @@
    limitations under the License.
 """
 
-if __name__ == '__main__':
-    exit('Please use "client.py"')
 
-import os, inspect, configparser
-
-conf_path = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
-conf_file = 'lifx.conf'
-
-config = configparser.ConfigParser()
+from simple_conf import configuration, section
+from os import getcwd
 
 
-if not os.path.isfile(os.path.join(conf_path, conf_file)):
-    print('No config file found')
-    config['LIFX'] = {
-        'cloud_url': 'https://api.lifx.com/v1',
-        'api_key': ''
-    }
-    config['SEPL'] = {
-        'device_type': ''
-    }
-    with open(os.path.join(conf_path, conf_file), 'w') as cf:
-        config.write(cf)
-    exit("Created blank config file at '{}'".format(conf_path))
+@configuration
+class LifxConf:
+
+    @section
+    class Cloud:
+        host = "api.lifx.com/v1"
+        api_path = "lights"
+        api_key = None
+
+    @section
+    class Senergy:
+        dt_lifx_a19 = None
+        st_set_color = None
+        st_set_kelvin = None
+        st_set_on = None
+        st_set_off = None
+        st_set_brightness = None
+        st_get_status = None
+
+    @section
+    class Logger:
+        level = "info"
 
 
-try:
-    config.read(os.path.join(conf_path, conf_file))
-except Exception as ex:
-    exit(ex)
+config = LifxConf('lifx.conf', getcwd())
 
 
-LIFX_CLOUD_URL = config['LIFX']['cloud_url']
-LIFX_API_KEY = config['LIFX']['api_key']
-SEPL_DEVICE_TYPE = config['SEPL']['device_type']
+if not all((config.Cloud.host, config.Cloud.api_path, config.Cloud.api_key)):
+    exit('Please provide LIFX information')
 
-if not LIFX_API_KEY:
-    exit('Please provide a Lifx API key')
-
-if not SEPL_DEVICE_TYPE:
-    exit('Please provide a SEPL device type')
+if not all(
+        (
+                config.Senergy.dt_lifx_a19,
+                config.Senergy.st_set_color,
+                config.Senergy.st_set_on,
+                config.Senergy.st_set_off,
+                config.Senergy.st_set_brightness,
+                config.Senergy.st_get_status
+        )
+):
+    exit('Please provide a SENERGY device and service types')

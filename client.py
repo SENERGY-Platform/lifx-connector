@@ -14,49 +14,50 @@
    limitations under the License.
 """
 
-try:
-    from connector_lib.modules.http_lib import Methods as http
-    from connector_lib.modules.device_pool import DevicePool
-    from connector_lib.client import Client
-    from lifx.configuration import LIFX_CLOUD_URL, LIFX_API_KEY
-    from lifx.cloud_api_monitor import Monitor
-    from lifx.logger import root_logger
-except ImportError as ex:
-    exit("{} - {}".format(__name__, ex.msg))
+
+from lifx.monitor import Monitor
+from lifx.device_manager import DeviceManager
+from lifx.controller import Controller
+from lifx.logger import root_logger
+import cc_lib, time
 
 
 logger = root_logger.getChild(__name__)
 
 
-def router():
-    while True:
-        task = Client.receive()
+device_manager = DeviceManager()
+
+
+def on_connect(client: cc_lib.client.Client):
+    devices = device_manager.devices
+    for device in devices.values():
         try:
-            for part in task.payload.get('protocol_parts'):
-                if part.get('name') == 'data':
-                    command = part.get('value')
-            logger.info(command)
-            http_resp = http.put(
-                '{}/lights/id:{}/state'.format(
-                    LIFX_CLOUD_URL, task.payload.get('device_url')
-                ),
-                command,
-                headers={
-                    'Authorization': 'Bearer {}'.format(LIFX_API_KEY),
-                    'Content-Type': 'application/json'
-                }
-            )
-            if http_resp.status not in (200, 207):
-                logger.error("could not route message to LIFX API - '{}'".format(http_resp.status))
-            response = str(http_resp.status)
-            logger.info(response)
-        except Exception as ex:
-            logger.error("error handling task - '{}'".format(ex))
-            response = '500'
-        Client.response(task, response)
+            if device.state["reachable"]:
+                client.connectDevice(device, asynchronous=True)
+        except cc_lib.client.DeviceConnectError:
+            pass
+
+
+connector_client = cc_lib.client.Client()
+connector_client.setConnectClbk(on_connect)
+
+
+cloud_monitor = Monitor(device_manager, connector_client)
+controller = Controller(device_manager, connector_client)
 
 
 if __name__ == '__main__':
-    lifx_cloud_monitor = Monitor()
-    client_connector = Client(device_manager=DevicePool)
-    router()
+    while True:
+        try:
+            connector_client.initHub()
+            break
+        except cc_lib.client.HubInitializationError:
+            time.sleep(10)
+    connector_client.connect(reconnect=True)
+    cloud_monitor.start()
+    controller.start()
+    try:
+        cloud_monitor.join()
+        controller.join()
+    except KeyboardInterrupt:
+        print("\ninterrupted by user\n")
