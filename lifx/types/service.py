@@ -163,6 +163,7 @@ class GetStatus:
         if err:
             logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
         else:
+            body = body.pop()
             payload["power"] = body["power"]
             payload["brightness"] = body["brightness"]
             payload["hue"] = body["color"]["hue"]
