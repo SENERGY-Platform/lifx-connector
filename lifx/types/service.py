@@ -81,7 +81,7 @@ class SetColor:
 
     @staticmethod
     def task(device, hue: int, saturation: float, brightness: float):
-        err, body = cloudPut(device.id, {"brightness": brightness / 100, "color": {"hue": hue, "saturation": saturation / 100}})
+        err, body = cloudPut(device.id, {"power": "on", "brightness": brightness / 100, "color": {"hue": hue, "saturation": saturation / 100}})
         if err:
             logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
         return {"status": int(err)}
@@ -95,7 +95,7 @@ class SetKelvin:
 
     @staticmethod
     def task(device, kelvin: int):
-        err, body = cloudPut(device.id, {"color": {"kelvin": kelvin}})
+        err, body = cloudPut(device.id, {"power": "on", "color": {"kelvin": kelvin}})
         if err:
             logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
         return {"status": int(err)}
@@ -137,7 +137,7 @@ class SetBrightness:
 
     @staticmethod
     def task(device, brightness):
-        err, body = cloudPut(device.id, {"brightness": brightness / 100})
+        err, body = cloudPut(device.id, {"power": "on", "brightness": brightness / 100})
         if err:
             logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
         return {"status": int(err)}
