@@ -80,8 +80,16 @@ class SetColor:
     description = "Set light color via Hue, Saturation and Brightness."
 
     @staticmethod
-    def task(device, hue: int, saturation: float, brightness: float):
-        err, body = cloudPut(device.id, {"power": "on", "brightness": brightness / 100, "color": {"hue": hue, "saturation": saturation / 100}})
+    def task(device, hue: int, saturation: float, brightness: float, duration: float):
+        err, body = cloudPut(
+            device.id,
+            {
+                "power": "on",
+                "brightness": brightness / 100,
+                "color": {"hue": hue, "saturation": saturation / 100},
+                "duration": duration
+            }
+        )
         if err:
             logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
         return {"status": int(err)}
@@ -94,8 +102,8 @@ class SetKelvin:
     description = "Set light kelvin temperature."
 
     @staticmethod
-    def task(device, kelvin: int):
-        err, body = cloudPut(device.id, {"power": "on", "color": {"kelvin": kelvin}})
+    def task(device, kelvin: int, duration: float):
+        err, body = cloudPut(device.id, {"power": "on", "color": {"kelvin": kelvin}, "duration": duration})
         if err:
             logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
         return {"status": int(err)}
@@ -108,8 +116,8 @@ class SetOn:
     description = "Turn on light."
 
     @staticmethod
-    def task(device):
-        err, body = cloudPut(device.id, {"power": "on"})
+    def task(device, duration: float):
+        err, body = cloudPut(device.id, {"power": "on", "duration": duration})
         if err:
             logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
         return {"status": int(err)}
@@ -122,8 +130,8 @@ class SetOff:
     description = "Turn off light."
 
     @staticmethod
-    def task(device):
-        err, body = cloudPut(device.id, {"power": "off"})
+    def task(device, duration: float):
+        err, body = cloudPut(device.id, {"power": "off", "duration": duration})
         if err:
             logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
         return {"status": int(err)}
@@ -136,8 +144,8 @@ class SetBrightness:
     description = "Set light brightness."
 
     @staticmethod
-    def task(device, brightness):
-        err, body = cloudPut(device.id, {"power": "on", "brightness": brightness / 100})
+    def task(device, brightness, duration: float):
+        err, body = cloudPut(device.id, {"power": "on", "brightness": brightness / 100, "duration": duration})
         if err:
             logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
         return {"status": int(err)}
