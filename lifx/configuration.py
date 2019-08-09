@@ -42,6 +42,9 @@ class LifxConf:
     class Logger:
         level = "info"
 
+    @section
+    class Controller:
+        max_command_age = 15
 
 config = LifxConf('lifx.conf', getcwd())
 
