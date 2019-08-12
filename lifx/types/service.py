@@ -99,11 +99,19 @@ class SetColor:
 class SetKelvin:
     uri = config.Senergy.st_set_kelvin
     name = "Set Kelvin"
-    description = "Set light kelvin temperature."
+    description = "Set light kelvin temperature and brightness."
 
     @staticmethod
-    def task(device, kelvin: int, duration: float):
-        err, body = cloudPut(device.id, {"power": "on", "color": {"kelvin": kelvin}, "duration": duration})
+    def task(device, kelvin: int, brightness, duration: float):
+        err, body = cloudPut(
+            device.id,
+            {
+                "power": "on",
+                "color": {"kelvin": kelvin},
+                "brightness": brightness / 100,
+                "duration": duration
+             }
+        )
         if err:
             logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
         return {"status": int(err)}
