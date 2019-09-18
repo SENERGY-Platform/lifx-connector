@@ -32,7 +32,7 @@ def on_connect(client: cc_lib.client.Client):
     devices = device_manager.devices
     for device in devices.values():
         try:
-            if device.state["reachable"]:
+            if device.state["connected"]:
                 client.connectDevice(device, asynchronous=True)
         except cc_lib.client.DeviceConnectError:
             pass
