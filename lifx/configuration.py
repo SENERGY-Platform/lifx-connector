@@ -16,7 +16,10 @@
 
 
 from simple_conf import configuration, section
-from os import getcwd
+from os import getcwd, makedirs
+from os.path import exists as path_exists
+
+user_dir = '{}/storage'.format(getcwd())
 
 
 @configuration
@@ -46,7 +49,11 @@ class LifxConf:
     class Controller:
         max_command_age = 15
 
-config = LifxConf('lifx.conf', getcwd())
+
+if not path_exists(user_dir):
+    makedirs(user_dir)
+
+config = LifxConf('lifx.conf', user_dir)
 
 
 if not all((config.Cloud.host, config.Cloud.api_path, config.Cloud.api_key)):
