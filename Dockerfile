@@ -10,6 +10,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 RUN mkdir cc-lib
-RUN touch lifx.conf
+RUN mkdir storage
 
 CMD [ "python", "./client.py"]
