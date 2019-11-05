@@ -18,7 +18,7 @@
 __all__ = ('device_type_map', 'LifxA19')
 
 
-from .service import SetColor, SetOn, SetOff, SetBrightness, SetKelvin, GetStatus
+from .service import SetPower, SetColor, SetBrightness, SetKelvin, GetStatus
 from threading import Lock
 from ..configuration import config
 import cc_lib
@@ -26,7 +26,7 @@ import cc_lib
 
 class LifxA19(cc_lib.types.Device):
     device_type_id = config.Senergy.dt_lifx_a19
-    services = (SetOn, SetOff, SetColor, SetBrightness, GetStatus, SetKelvin)
+    services = (SetPower, SetColor, SetBrightness, GetStatus, SetKelvin)
 
     def __init__(self, id: str, name: str, state: dict):
         self.id = id
