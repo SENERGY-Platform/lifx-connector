@@ -15,7 +15,7 @@
 """
 
 
-__all__ = ('SetBrightness', 'SetOff', 'SetOn', 'SetColor', 'GetStatus', 'SetKelvin')
+__all__ = ('SetPower', 'SetBrightness', 'SetColor', 'GetStatus', 'SetKelvin')
 
 
 from ..configuration import config
@@ -111,23 +111,34 @@ class SetKelvin(cc_lib.types.Service):
         return {"status": int(err)}
 
 
-class SetOn(cc_lib.types.Service):
-    local_id = "setOn"
+# class SetOn(cc_lib.types.Service):
+#     local_id = "setOn"
+#
+#     @staticmethod
+#     def task(device, duration: float):
+#         err, body = cloudPut(device.id, {"power": "on", "duration": duration})
+#         if err:
+#             logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
+#         return {"status": int(err)}
+#
+#
+# class SetOff(cc_lib.types.Service):
+#     local_id = "setOff"
+#
+#     @staticmethod
+#     def task(device, duration: float):
+#         err, body = cloudPut(device.id, {"power": "off", "duration": duration})
+#         if err:
+#             logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
+#         return {"status": int(err)}
+
+
+class SetPower(cc_lib.types.Service):
+    local_id = "setPower"
 
     @staticmethod
-    def task(device, duration: float):
-        err, body = cloudPut(device.id, {"power": "on", "duration": duration})
-        if err:
-            logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
-        return {"status": int(err)}
-
-
-class SetOff(cc_lib.types.Service):
-    local_id = "setOff"
-
-    @staticmethod
-    def task(device, duration: float):
-        err, body = cloudPut(device.id, {"power": "off", "duration": duration})
+    def task(device, power: str, duration: float):
+        err, body = cloudPut(device.id, {"power": power, "duration": duration})
         if err:
             logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
         return {"status": int(err)}
