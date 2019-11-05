@@ -25,16 +25,8 @@ import cc_lib
 
 
 class LifxA19(cc_lib.types.Device):
-    uri = config.Senergy.dt_lifx_a19
-    description = "Device type for LIFX A19 smart bulb."
-    services = {
-        'setOn': SetOn,
-        'setOff': SetOff,
-        'setColor': SetColor,
-        'setBrightness': SetBrightness,
-        'getStatus': GetStatus,
-        'setKelvin': SetKelvin
-    }
+    device_type_id = config.Senergy.dt_lifx_a19
+    services = (SetOn, SetOff, SetColor, SetBrightness, GetStatus, SetKelvin)
 
     def __init__(self, id: str, name: str, state: dict):
         self.id = id
