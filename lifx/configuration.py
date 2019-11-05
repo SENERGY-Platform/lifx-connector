@@ -34,12 +34,6 @@ class LifxConf:
     @section
     class Senergy:
         dt_lifx_a19 = None
-        st_set_color = None
-        st_set_kelvin = None
-        st_set_on = None
-        st_set_off = None
-        st_set_brightness = None
-        st_get_status = None
 
     @section
     class Logger:
@@ -59,14 +53,5 @@ config = LifxConf('lifx.conf', user_dir)
 if not all((config.Cloud.host, config.Cloud.api_path, config.Cloud.api_key)):
     exit('Please provide LIFX information')
 
-if not all(
-        (
-                config.Senergy.dt_lifx_a19,
-                config.Senergy.st_set_color,
-                config.Senergy.st_set_on,
-                config.Senergy.st_set_off,
-                config.Senergy.st_set_brightness,
-                config.Senergy.st_get_status
-        )
-):
+if not all((config.Senergy.dt_lifx_a19, )):
     exit('Please provide a SENERGY device and service types')
