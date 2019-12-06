@@ -58,5 +58,6 @@ class LifxA19(cc_lib.types.Device):
 
 
 device_type_map = {
-    "lifx_a19": LifxA19
+    "lifx_a19": LifxA19,
+    "lifx_plus_a19": LifxA19
 }
