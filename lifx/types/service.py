@@ -88,7 +88,7 @@ class SetColor(cc_lib.types.Service):
             }
         )
         if err:
-            logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
+            logger.error("'{}' for '{}' failed - {}".format(__class__.__name__, device.id, body))
         return {"status": int(err)}
 
 
@@ -107,7 +107,7 @@ class SetKelvin(cc_lib.types.Service):
              }
         )
         if err:
-            logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
+            logger.error("'{}' for '{}' failed - {}".format(__class__.__name__, device.id, body))
         return {"status": int(err)}
 
 
@@ -140,7 +140,7 @@ class SetPower(cc_lib.types.Service):
     def task(device, power: str, duration: float):
         err, body = cloudPut(device.id, {"power": power, "duration": duration})
         if err:
-            logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
+            logger.error("'{}' for '{}' failed - {}".format(__class__.__name__, device.id, body))
         return {"status": int(err)}
 
 
@@ -151,7 +151,7 @@ class SetBrightness(cc_lib.types.Service):
     def task(device, brightness, duration: float):
         err, body = cloudPut(device.id, {"power": "on", "brightness": brightness / 100, "duration": duration})
         if err:
-            logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
+            logger.error("'{}' for '{}' failed - {}".format(__class__.__name__, device.id, body))
         return {"status": int(err)}
 
 
@@ -170,7 +170,7 @@ class GetStatus(cc_lib.types.Service):
             }
         err, body = cloudGet(device.id)
         if err:
-            logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
+            logger.error("'{}' for '{}' failed - {}".format(__class__.__name__, device.id, body))
         else:
             body = body.pop()
             payload["power"] = body["power"]
