@@ -21,7 +21,7 @@ __all__ = ('SetPower', 'SetBrightness', 'SetColor', 'GetStatus', 'SetKelvin')
 from ..configuration import config
 from ..logger import root_logger
 from requests import put, get, exceptions
-import cc_lib, json
+import cc_lib, json, datetime
 
 
 logger = root_logger.getChild(__name__.split(".", 1)[-1])
@@ -166,7 +166,8 @@ class GetStatus(cc_lib.types.Service):
                 "brightness": 0,
                 "hue": 0,
                 "saturation": 0,
-                "kelvin": 0
+                "kelvin": 0,
+                "time": "{}Z".format(datetime.datetime.utcnow().isoformat())
             }
         err, body = cloudGet(device.id)
         if err:
