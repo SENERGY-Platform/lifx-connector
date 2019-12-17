@@ -15,13 +15,13 @@
 """
 
 
-__all__ = ('SetBrightness', 'SetOff', 'SetOn', 'SetColor', 'GetStatus', 'SetKelvin')
+__all__ = ('SetPower', 'SetBrightness', 'SetColor', 'GetStatus', 'SetKelvin')
 
 
 from ..configuration import config
 from ..logger import root_logger
 from requests import put, get, exceptions
-import cc_lib, json
+import cc_lib, json, datetime
 
 
 logger = root_logger.getChild(__name__.split(".", 1)[-1])
@@ -73,11 +73,8 @@ def cloudGet(d_id: str):
         return True, "could not send request to LIFX cloud"
 
 
-@cc_lib.types.actuator_service
-class SetColor:
-    uri = config.Senergy.st_set_color
-    name = "Set Color HSB"
-    description = "Set light color via Hue, Saturation and Brightness."
+class SetColor(cc_lib.types.Service):
+    local_id = "setColor"
 
     @staticmethod
     def task(device, hue: int, saturation: float, brightness: float, duration: float):
@@ -91,15 +88,12 @@ class SetColor:
             }
         )
         if err:
-            logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
+            logger.error("'{}' for '{}' failed - {}".format(__class__.__name__, device.id, body))
         return {"status": int(err)}
 
 
-@cc_lib.types.actuator_service
-class SetKelvin:
-    uri = config.Senergy.st_set_kelvin
-    name = "Set Kelvin"
-    description = "Set light kelvin temperature and brightness."
+class SetKelvin(cc_lib.types.Service):
+    local_id = "setKelvin"
 
     @staticmethod
     def task(device, kelvin: int, brightness, duration: float):
@@ -113,57 +107,56 @@ class SetKelvin:
              }
         )
         if err:
-            logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
+            logger.error("'{}' for '{}' failed - {}".format(__class__.__name__, device.id, body))
         return {"status": int(err)}
 
 
-@cc_lib.types.actuator_service
-class SetOn:
-    uri = config.Senergy.st_set_on
-    name = "Set On"
-    description = "Turn on light."
+# class SetOn(cc_lib.types.Service):
+#     local_id = "setOn"
+#
+#     @staticmethod
+#     def task(device, duration: float):
+#         err, body = cloudPut(device.id, {"power": "on", "duration": duration})
+#         if err:
+#             logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
+#         return {"status": int(err)}
+#
+#
+# class SetOff(cc_lib.types.Service):
+#     local_id = "setOff"
+#
+#     @staticmethod
+#     def task(device, duration: float):
+#         err, body = cloudPut(device.id, {"power": "off", "duration": duration})
+#         if err:
+#             logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
+#         return {"status": int(err)}
+
+
+class SetPower(cc_lib.types.Service):
+    local_id = "setPower"
 
     @staticmethod
-    def task(device, duration: float):
-        err, body = cloudPut(device.id, {"power": "on", "duration": duration})
+    def task(device, power: str, duration: float):
+        err, body = cloudPut(device.id, {"power": power, "duration": duration})
         if err:
-            logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
+            logger.error("'{}' for '{}' failed - {}".format(__class__.__name__, device.id, body))
         return {"status": int(err)}
 
 
-@cc_lib.types.actuator_service
-class SetOff:
-    uri = config.Senergy.st_set_off
-    name = "Set Off"
-    description = "Turn off light."
-
-    @staticmethod
-    def task(device, duration: float):
-        err, body = cloudPut(device.id, {"power": "off", "duration": duration})
-        if err:
-            logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
-        return {"status": int(err)}
-
-
-@cc_lib.types.actuator_service
-class SetBrightness:
-    uri = config.Senergy.st_set_brightness
-    name = "Set Brightness"
-    description = "Set light brightness."
+class SetBrightness(cc_lib.types.Service):
+    local_id = "setBrightness"
 
     @staticmethod
     def task(device, brightness, duration: float):
         err, body = cloudPut(device.id, {"power": "on", "brightness": brightness / 100, "duration": duration})
         if err:
-            logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
+            logger.error("'{}' for '{}' failed - {}".format(__class__.__name__, device.id, body))
         return {"status": int(err)}
 
 
-@cc_lib.types.sensor_service
-class GetStatus:
-    uri = config.Senergy.st_get_status
-    name = "Get Status"
-    description = "Get light status parameters."
+class GetStatus(cc_lib.types.Service):
+    local_id = "getStatus"
 
     @staticmethod
     def task(device):
@@ -173,11 +166,12 @@ class GetStatus:
                 "brightness": 0,
                 "hue": 0,
                 "saturation": 0,
-                "kelvin": 0
+                "kelvin": 0,
+                "time": "{}Z".format(datetime.datetime.utcnow().isoformat())
             }
         err, body = cloudGet(device.id)
         if err:
-            logger.error("'{}' for '{}' failed - {}".format(__class__.name, device.id, body))
+            logger.error("'{}' for '{}' failed - {}".format(__class__.__name__, device.id, body))
         else:
             body = body.pop()
             payload["power"] = body["power"]
