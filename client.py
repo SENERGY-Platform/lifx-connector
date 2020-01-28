@@ -15,14 +15,17 @@
 """
 
 
+from lifx.configuration import config
 from lifx.monitor import Monitor
 from lifx.device_manager import DeviceManager
 from lifx.controller import Controller
-from lifx.logger import root_logger
-import cc_lib, time
+import random, time, cc_lib
 
 
-logger = root_logger.getChild(__name__)
+if config.RuntimeEnv.max_start_delay > 0:
+    delay = random.randint(1, config.RuntimeEnv.max_start_delay)
+    print("delaying start for {}s".format(delay))
+    time.sleep(delay)
 
 
 device_manager = DeviceManager()
