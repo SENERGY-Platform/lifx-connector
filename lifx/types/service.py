@@ -175,7 +175,7 @@ class GetStatus(cc_lib.types.Service):
         else:
             body = body.pop()
             payload["power"] = body["power"]
-            payload["brightness"] = body["brightness"]
+            payload["brightness"] = round(body["brightness"] * 100)
             payload["hue"] = body["color"]["hue"]
             payload["saturation"] = body["color"]["hue"]
             payload["kelvin"] = body["color"]["hue"]
